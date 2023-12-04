@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {v4 as uuid} from 'uuid';
 import { NEW_NODE_NAME, ROOT_ID } from '../constants/app-constants'
 import './tree.css';
@@ -22,6 +22,8 @@ function Tree(props: Props) {
     /* eslint-disable-next-line */
     onDelete,
   } = props;
+  const [isFocused, setIsFocused] = useState(false);
+  const inputContainerRef = useRef(null);
   const [isEditable, setIsEditable] = useState(false);
   const [items, setItems] = useState(nodes || []);
   const [textValue, setTextValue] = useState(name);
@@ -52,8 +54,13 @@ function Tree(props: Props) {
 
   return (
     <li>
-      <div className='node-content'>
+      <div 
+        className='node-content' 
+        onMouseEnter={() => setIsFocused(true)} 
+        onMouseLeave={() => setIsFocused(false)}
+        ref={inputContainerRef}>
         <input 
+          contentEditable={isEditable}
           disabled={!isEditable} 
           onChange={(e) => setTextValue(e.target.value)} 
           type='text' 
@@ -62,16 +69,19 @@ function Tree(props: Props) {
           isEditable
           ? 
             <button onClick={() => setIsEditable(false)}>Save</button> 
-          : 
-            <div>
-              <button onClick={() => addNode()}>Add</button>
-              <button onClick={() => setIsEditable(true)}>Edit</button>
-              { 
-                id === ROOT_ID || !onDelete ? 
-                  <></> : 
-                  <button onClick={() => onDelete(id)}>Remove</button> 
-              }
-            </div>
+          : (  isFocused
+              ? 
+                <div>
+                  <button onClick={() => addNode()}>Add</button>
+                  <button onClick={() => setIsEditable(true)}>Edit</button>
+                  { 
+                    id === ROOT_ID || !onDelete ? 
+                      <></> : 
+                      <button onClick={() => onDelete(id)}>Remove</button> 
+                  }
+                </div>
+              : 
+              <></>)
         }
       </div>
       <ul>{tree}</ul>
